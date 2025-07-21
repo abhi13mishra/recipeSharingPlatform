@@ -1,34 +1,32 @@
-import React, { useState } from "react";
-import { auth } from "../firebase/config";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from 'react';
+import { auth } from '../firebase';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
+import '../styles/App.css';
 
 const Register = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [form, setForm] = useState({ email: '', password: '' });
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleRegister = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      navigate("/");
-    } catch (err) {
-      alert("Register failed: " + err.message);
+      await createUserWithEmailAndPassword(auth, form.email, form.password);
+      navigate('/');
+    } catch (error) {
+      setError(error.message);
     }
   };
 
   return (
-    <div className="container">
+    <form onSubmit={handleSubmit}>
       <h2>Register</h2>
-      <form onSubmit={handleRegister}>
-        <input type="email" placeholder="Email" value={email}
-          onChange={(e) => setEmail(e.target.value)} required />
-        <input type="password" placeholder="Password" value={password}
-          onChange={(e) => setPassword(e.target.value)} required />
-        <button type="submit">Register</button>
-      </form>
-    </div>
+      <input type="email" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+      <input type="password" placeholder="Password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+      <button type="submit">Register</button>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+    </form>
   );
 };
 

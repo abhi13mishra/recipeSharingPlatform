@@ -1,25 +1,30 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../firebase';
 import { collection, getDocs } from 'firebase/firestore';
+import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import '../styles/App.css';
 
-const Home = () => {
+const Favorites = () => {
   const [recipes, setRecipes] = useState([]);
+  const { user } = useAuth();
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchFavorites = async () => {
       const snapshot = await getDocs(collection(db, 'recipes'));
-      setRecipes(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      const favs = snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter(r => r.favorites?.includes(user.uid));
+      setRecipes(favs);
     };
-    fetchData();
-  }, []);
+    if (user) fetchFavorites();
+  }, [user]);
 
   return (
     <div className="container">
-      <h2>All Recipes</h2>
+      <h2>Your Favorite Recipes</h2>
       {recipes.length === 0 ? (
-        <p>No recipes available.</p>
+        <p>No favorite recipes yet.</p>
       ) : (
         <div className="grid">
           {recipes.map(r => (
@@ -40,4 +45,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default Favorites;

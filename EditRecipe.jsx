@@ -1,13 +1,13 @@
-// src/pages/EditRecipe.jsx
-
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { db } from "../firebase/config";
+import { db } from "../firebase";
+import { useAuth } from "../context/AuthContext";
 
 const EditRecipe = () => {
-  const { id } = useParams(); // recipeId from URL
+  const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [formData, setFormData] = useState({
     title: "",
@@ -16,6 +16,11 @@ const EditRecipe = () => {
   });
 
   useEffect(() => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
     const fetchRecipe = async () => {
       try {
         const docRef = doc(db, "recipes", id);
@@ -31,7 +36,7 @@ const EditRecipe = () => {
     };
 
     fetchRecipe();
-  }, [id]);
+  }, [id, user, navigate]);
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -47,7 +52,7 @@ const EditRecipe = () => {
       await updateDoc(docRef, {
         ...formData,
       });
-      navigate("/my-recipes"); // Go back to my recipes after update
+      navigate("/my-recipes");
     } catch (err) {
       console.error("Error updating recipe:", err);
     }
